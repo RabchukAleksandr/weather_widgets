@@ -1,13 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+
+import {Provider} from "react-redux";
+import store from "./store";
+import Weather from "./components/Weather";
+import {PersistGate} from "redux-persist/integration/react";
+import {persistStore} from "redux-persist";
 
 function App() {
-  return (
-    <div className="App">
 
-    </div>
-  );
-}
+    let persistor = persistStore(store);
+
+    return (
+        <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+                <Weather/>
+            </PersistGate>
+        </Provider>
+    );
+};
 
 export default App;
