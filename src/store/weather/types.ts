@@ -1,6 +1,3 @@
-import {useSelector} from "react-redux";
-import {RootState} from "../index";
-
 export type InitialState = {
     widgets: Weather[]
     countries: Country[]
@@ -11,21 +8,21 @@ export type InitialState = {
 export type Weather = {
     weather: Array<{
         main: string
-        description: string
     }>
+    id:string
     main: {
-        temp: string
+        temp: number
     }
     wind: {
         speed: number
-        deg:number
     }
     sys: {
-      sunrise: number
-      sunshine: number
+        sunrise: number
+        sunset: number
+        country: string
     }
     name: string
-    icon:string
+    icon: string
 }
 
 export type Coords = {

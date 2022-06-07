@@ -1,0 +1,6 @@
+.mySwiper .swiper-slide {
+    height: auto;
+    display: flex;
+}
+.mySwiper .swiper-wrapper {
+}
