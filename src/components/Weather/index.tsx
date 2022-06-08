@@ -1,20 +1,21 @@
 import React, {useEffect} from 'react';
 
 import {usePosition} from "use-position";
-import {Navigation, Pagination, Scrollbar, A11y, Virtual} from 'swiper';
+import {Navigation, Pagination} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
 
-import weatherReducer, {fetchWeather, fetchCountries} from "../../store/weather";
-import {AppDispatch, RootState, useAppDispatch, useAppSelector} from "../../store";
+import  {fetchWeather, fetchCountries} from "../../store/weather";
+import {useAppDispatch, useAppSelector} from "../../store";
 import {Weather as WeatherType} from "../../store/weather/types";
 
-import {Box, Grid} from "@mui/material";
+import {Box} from "@mui/material";
 
 import Widget from "../Unknown/Widget";
 import AddCity from "../Unknown/AddCity";
 
 import "swiper/css";
 import "swiper/css/navigation";
+import "swiper/css/pagination";
 import './styles.css';
 
 type WeatherProps = {}
@@ -31,7 +32,7 @@ const Weather: React.FC<WeatherProps> = () => {
 
     useEffect(() => {
         if (latitude && longitude && widgets.length === 0) {
-            dispatch(fetchWeather({lat: latitude, lon: longitude})).unwrap()
+            dispatch(fetchWeather({coords: {lat: latitude, lon: longitude}, home:true}))
         }
     }, [latitude, longitude, dispatch, widgets.length])
 
@@ -42,11 +43,11 @@ const Weather: React.FC<WeatherProps> = () => {
     return (
         <Box height={1} width={1}>
             <Box>
-            <Swiper modules={[Navigation]} spaceBetween={10} slidesPerView={5} navigation pagination={{clickable: true}}
+            <Swiper modules={[Navigation, Pagination]} spaceBetween={10} slidesPerView={5} navigation slidesPerGroup={5} pagination={{clickable: true, }}
                     className={'mySwiper'}>
-                {widgets.map(({weather, main, wind, sys, name, icon, id}: WeatherType) => (
+                {widgets.map(({weather, main, wind, sys, name, icon, id, home}: WeatherType) => (
                     <SwiperSlide key={id}>
-                        <Widget weather={weather} main={main} wind={wind} sys={sys} name={name} icon={icon}/>
+                        <Widget weather={weather} main={main} wind={wind} sys={sys} name={name} icon={icon} id={id} home={home}/>
                     </SwiperSlide>
                 ))}
                 <SwiperSlide>

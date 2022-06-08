@@ -1,10 +1,9 @@
-import {createAsyncThunk, createSlice, SerializedError, PayloadAction, StateFromReducersMapObject} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {Coords, InitialState, Weather} from "./types";
-import {useAppDispatch} from "../index";
 
 export const fetchWeather = createAsyncThunk(
     'weather/fetchWeather',
-    async function (coords: Coords, {rejectWithValue}){
+    async function ({coords,home}:{coords:Coords,home:boolean}, {rejectWithValue,fulfillWithValue}){
         try{
             const {lat, lon} = coords
             const weather = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`)
@@ -12,8 +11,28 @@ export const fetchWeather = createAsyncThunk(
             if (!weather.ok) {
                 throw new Error('Server Error!');
             }
+            const data = await weather.json() as Weather
+            return fulfillWithValue({...data,home:home})
 
-            return await weather.json()
+        }catch(error: any){
+            return rejectWithValue(error.message)
+        }
+    },
+)
+
+export const fetchCityLocation = createAsyncThunk(
+    'weather/fetchCityLocation',
+    async function (city: string, {rejectWithValue,dispatch}){
+        try{
+
+            const location = await fetch(`https://geocode.xyz/${city}?json=1`)
+
+            if (!location.ok) {
+                throw new Error('Server Error!');
+            }
+            const {latt,longt} = await location.json()
+            dispatch(fetchWeather({coords: {lat: latt, lon: longt},home:false}))
+            return await location.json()
 
         }catch(error: any){
             return rejectWithValue(error.message)
@@ -53,18 +72,28 @@ const weatherSlice = createSlice({
     name: 'weather',
     initialState,
     reducers: {
-
+        deleteWidget: ((state, action) => {
+           state.widgets = state.widgets.filter((widget) => widget.id !== action.payload.id)
+        })
     },
     extraReducers: (builder) => {
         builder.addCase(fetchWeather.pending, (state) => {
             state.status = 'loading'
         })
         builder.addCase(fetchWeather.fulfilled,  (state, {payload}) => {
-            state.widgets.push({...payload,icon:`http://openweathermap.org/img/wn/${payload.weather[0].icon}.png`})
+            // @ts-ignore
+            if(payload.home){
+                // @ts-ignore
+                state.widgets.unshift({...payload,icon:`http://openweathermap.org/img/wn/${payload.weather[0].icon}.png`})
+            }else {
+                // @ts-ignore
+                state.widgets.push({...payload,icon:`http://openweathermap.org/img/wn/${payload.weather[0].icon}.png`})
+            }
             state.status = 'loaded'
         })
         builder.addCase(fetchWeather.rejected, (state, action) => {
             state.error = action.payload
+            alert(action.payload)
             state.status = 'rejected'
         })
         builder.addCase(fetchCountries.pending, (state) => {
@@ -76,11 +105,24 @@ const weatherSlice = createSlice({
         })
         builder.addCase(fetchCountries.rejected, (state, action) => {
             state.error = action.payload
+            alert(action.payload)
+            state.status = 'rejected'
+        })
+        builder.addCase(fetchCityLocation.pending, (state) => {
+            state.status = 'loading'
+        })
+        builder.addCase(fetchCityLocation.fulfilled, (state, {payload}) => {
+            console.log(payload)
+            state.status = 'loaded'
+        })
+        builder.addCase(fetchCityLocation.rejected, (state, action) => {
+            state.error = action.payload
+            alert(action.payload)
             state.status = 'rejected'
         })
     }
 })
 
-export const {} = weatherSlice.actions
+export const {deleteWidget} = weatherSlice.actions
 
 export default weatherSlice.reducer

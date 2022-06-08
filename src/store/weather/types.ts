@@ -23,6 +23,7 @@ export type Weather = {
     }
     name: string
     icon: string
+    home: boolean
 }
 
 export type Coords = {
